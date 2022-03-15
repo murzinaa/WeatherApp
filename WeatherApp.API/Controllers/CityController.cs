@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Interfaces;
@@ -20,20 +21,38 @@ namespace WeatherApp.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task DeleteCity([FromRoute] int id) => await _cityService.DeleteCity(id);
+        public async Task<IActionResult> DeleteCity([FromRoute] int id) 
+        {
+            try
+            {
+                await _cityService.DeleteCity(id);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
 
 
         [HttpPost("create/{cityName}")]
         public async Task<IActionResult> AddCity(string cityName)
         {
-            var city = new CityDto { Name = cityName };
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                var city = new CityDto { Name = cityName };
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var dto = _mapper.Map<CityDto>(city);
+                await _cityService.CreateCity(dto);
+                return Ok();
             }
-            var dto = _mapper.Map<CityDto>(city);
-            await _cityService.CreateCity(dto);
-            return Ok();
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
             ////var city = new CreateCityModel { Name = cityName };
             //CreateCityValidator validator = new CreateCityValidator();
 

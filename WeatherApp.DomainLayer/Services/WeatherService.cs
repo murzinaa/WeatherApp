@@ -103,6 +103,8 @@ namespace WeatherApp.DomainLayer.Services
                 _context.Remove(model);
                 await _context.SaveChangesAsync();
             }
+            else
+                throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
         }
 
         public async Task <WeatherResult> GetCurrentWeather(string url, int id)

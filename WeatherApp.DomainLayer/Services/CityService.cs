@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using WeatherApp.DataLayer;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
+using WeatherApp.DomainLayer.Exeptions;
 using WeatherApp.DomainLayer.Interfaces;
 
 namespace WeatherApp.DomainLayer.Services
@@ -46,6 +47,8 @@ namespace WeatherApp.DomainLayer.Services
                 _context.Remove(model);
                 await _context.SaveChangesAsync();
             }
+            else
+                throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
         }
 
         public async Task<City> GetCityByCityId(int id)
