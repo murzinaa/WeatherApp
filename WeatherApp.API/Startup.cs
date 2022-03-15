@@ -13,6 +13,7 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Validation;
+using WeatherApp.API.Helpers;
 
 namespace WeatherApp.API
 {
@@ -70,7 +71,7 @@ namespace WeatherApp.API
             services.AddTransient<IStatisticalInfoService, StatisticalInfoService>();
             
             services.AddTransient<IAPIWeatherProvider, APIWeatherProvider>();
-            
+            services.AddTransient<WeatherHelper>();
             services.ConfigureMapper();
             services.AddScoped<IValidator<CityDto>, CityValidator>();
             services.AddScoped<IValidator<TemperatureDto>, TemperatureValidator>();

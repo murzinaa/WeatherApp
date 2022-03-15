@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WeatherApp.API.Helpers;
 using WeatherApp.APIProviders;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.Constants;
@@ -23,8 +24,9 @@ namespace WeatherApp.API.Controllers
         private readonly IStatisticalInfoService _statisticalInfoService;
         private readonly SettingService _settingService;
         private readonly IAPIWeatherProvider _apiWeatherProvider;
+        private readonly WeatherHelper _weatherHelper;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, IAPIWeatherProvider apiWeatherProvider)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, IAPIWeatherProvider apiWeatherProvider, WeatherHelper weatherHelper)
         {
             _weatherService = weatherService;
             _mapper = mapper;
@@ -32,49 +34,45 @@ namespace WeatherApp.API.Controllers
             _statisticalInfoService = statisticalInfoService;
             _settingService = settingService;
             _apiWeatherProvider = apiWeatherProvider;
+            _weatherHelper = weatherHelper;
         }
 
         [HttpPost]
         [Route("addTemperature")]
-    public async Task<IActionResult> AddTemperature(string cityName, double degrees) 
+    public async Task<IActionResult> AddTemperature(string cityName, double degrees, string dateTime = null) 
     {
             try
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
-                var temperature = new TemperatureDto { CityId = cityId, Degrees = degrees, DateTime = System.DateTime.Now };
+
+                //DateTime date;
+
+                //if (dateTime == null)
+                //    date = DateTime.Now;
+                //else
+                //    date = DateTime.ParseExact(dateTime, "yyyy-MM-dd HH:mm:ss",
+                //                       System.Globalization.CultureInfo.InvariantCulture);
+               
+                var temperature = new TemperatureDto { CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
+            
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
                 //var dto = _mapper.Map<TemperatureDto>(temperature);
+
                 await _weatherService.CreateWeatherCondition(_mapper.Map<TemperatureDto>(temperature));
+
                 return Ok();
             }
+
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
-        }
-
-
-            //var validator = new TemperatureValidator();
-            //// тут чет сделала
-            //await _cityService.CreateCity(new CityDto { Name = cityName });
-            //var cityId = _cityService.GetCityByCityName(cityName).Id;
-
-            //var model = new Temperature { CityId = cityId, Degrees = degrees, DateTime = System.DateTime.Now };
-            //var result = validator.Validate(model);
-            //if (result.IsValid)
-            //{
-            //    await _weatherService.CreateWeatherCondition(model);
-            //    return Ok();
-            //}
-            //else
-            //    return BadRequest(result.Errors);
-
-        
+        }       
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteTemperature(int id)
@@ -91,14 +89,22 @@ namespace WeatherApp.API.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees)
+        public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees, string dateTime = null)
         {
             try
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                var temp = new TemperatureDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = System.DateTime.Now };
+                //DateTime date;
+
+                //if (dateTime == null)
+                //    date = DateTime.Now;
+                //else
+                //    date = DateTime.ParseExact(dateTime, "yyyy-MM-dd HH:mm:ss",
+                //                       System.Globalization.CultureInfo.InvariantCulture);
+
+                var temp = new TemperatureDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
 
                 if (!ModelState.IsValid)
                 {
