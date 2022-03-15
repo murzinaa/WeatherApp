@@ -54,6 +54,8 @@ namespace WeatherApp.API
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")),
                 ServiceLifetime.Transient);
             services.AddTransient<IWeatherService, WeatherService>();
+            services.AddTransient<ICityService, CityService>();
+            services.AddTransient<IStatisticalInfoService, StatisticalInfoService>();
             
         }
 

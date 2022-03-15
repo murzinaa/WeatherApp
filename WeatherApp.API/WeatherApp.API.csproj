@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\WeatherApp.DataLayer\WeatherApp.DataLayer.csproj" />
     <ProjectReference Include="..\WeatherApp.DomainLayer\WeatherApp.DomainLayer.csproj" />
+    <ProjectReference Include="..\WeatherApp.Models\WeatherApp.Models.csproj" />
   </ItemGroup>
 
 

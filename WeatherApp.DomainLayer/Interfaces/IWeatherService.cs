@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using WeatherApp.DataLayer.Entities;
 
@@ -13,6 +11,8 @@ namespace WeatherApp.DomainLayer.Interfaces
         Task DeleteWeatherCondition(int id);
         List<Temperature> GetWeatherHistory(string CityName);
         List<City> GetCurrentWeather(string CityName);
+        Task ArchiveWeatherCondition(int id);
+        
 
     }
 }

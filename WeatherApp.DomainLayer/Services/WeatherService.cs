@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WeatherApp.DataLayer;
 using WeatherApp.DataLayer.Entities;
+using WeatherApp.DomainLayer.Exeptions;
 using WeatherApp.DomainLayer.Interfaces;
 
 namespace WeatherApp.DomainLayer.Services
@@ -12,13 +13,47 @@ namespace WeatherApp.DomainLayer.Services
     public class WeatherService : IWeatherService
     {
         private readonly WeatherContext _context;
+        private readonly ICityService cityService;
 
         public WeatherService(WeatherContext context)
         {
             _context = context;
         }
+
+        public async Task ArchiveWeatherCondition(int id)
+        {
+            
+            try
+            {
+                var temp = _context.Temperature.Where(t => t.Id == id).ToList().First<Temperature>();
+                temp.IsArchieved = true;
+
+                await _context.SaveChangesAsync();
+            }
+            catch 
+            {
+
+                throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
+            }
+            //if (temp != null)
+            //{
+            //    temp.IsArchieved = true;
+
+            //    await _context.SaveChangesAsync();
+
+            //}
+            //else
+            //{
+            //    throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
+            //}
+        }
+
         public async Task CreateWeatherCondition(Temperature temperature)
         {
+            //if (cityId = _cityService.GetCityByCityName(cityName).Id)
+            //{
+
+            //}
             await _context.AddAsync(temperature);
             await _context.SaveChangesAsync();
         }
@@ -38,11 +73,6 @@ namespace WeatherApp.DomainLayer.Services
             throw new NotImplementedException();
         }
 
-        //public List<City> GetCurrentWeather(string CityName)
-        //{
-        //   var model =  _context.Cities.Where(c => c.Name == CityName).ToList();
-        //    return model;
-        //}
 
         public List<Temperature> GetWeatherHistory(string CityName)
         {

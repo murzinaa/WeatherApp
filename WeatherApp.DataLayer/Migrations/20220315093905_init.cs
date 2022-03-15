@@ -28,7 +28,8 @@ namespace WeatherApp.DataLayer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CityId = table.Column<int>(type: "int", nullable: false),
                     Degrees = table.Column<double>(type: "float", nullable: false),
-                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsArchieved = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,13 +59,13 @@ namespace WeatherApp.DataLayer.Migrations
 
             migrationBuilder.InsertData(
                 table: "Temperature",
-                columns: new[] { "Id", "CityId", "DateTime", "Degrees" },
+                columns: new[] { "Id", "CityId", "DateTime", "Degrees", "IsArchieved" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2022, 3, 15, 10, 7, 7, 77, DateTimeKind.Local).AddTicks(8983), 12.0 },
-                    { 3, 2, new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified), -5.0 },
-                    { 4, 2, new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified), 10.0 },
-                    { 2, 3, new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified), 0.0 }
+                    { 1, 1, new DateTime(2022, 3, 15, 11, 39, 5, 208, DateTimeKind.Local).AddTicks(3580), 12.0, false },
+                    { 3, 2, new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified), -5.0, false },
+                    { 4, 2, new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified), 10.0, false },
+                    { 2, 3, new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified), 0.0, false }
                 });
 
             migrationBuilder.CreateIndex(
