@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using WeatherApp.DataLayer;
-using WeatherApp.DomainLayer.Exeptions;
 using WeatherApp.DomainLayer.Interfaces;
 
 namespace WeatherApp.DomainLayer.Services

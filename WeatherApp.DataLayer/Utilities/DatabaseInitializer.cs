@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using WeatherApp.DataLayer.Entities;
 
 namespace WeatherApp.DataLayer.Utilities

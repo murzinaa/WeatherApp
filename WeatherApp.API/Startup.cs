@@ -1,22 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.OpenApi.Models;
 using WeatherApp.DataLayer;
 using WeatherApp.DomainLayer.Services;
-using AutoMapper;
 using WeatherApp.DomainLayer.Interfaces;
 using WeatherApp.API.Extensions;
+using WeatherApp.APIProviders;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using WeatherApp.DomainLayer.DTOs;
+using WeatherApp.DomainLayer.Validation;
 
 namespace WeatherApp.API
 {
@@ -32,14 +28,30 @@ namespace WeatherApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.ConfigureMapper();
+             services.AddControllers().AddFluentValidation(fv =>
+            {
+                fv.DisableDataAnnotationsValidation = true;
+                fv.RegisterValidatorsFromAssemblyContaining<CityValidator>();
+                fv.LocalizationEnabled = false;
+            }); ;
+            //services.AddMvc(options =>
+            //{
+            //    options.Filters.Add(new ValidationFilter());
+            //})
+            //.AddFluentValidation(options =>
+            //{
+            //    options.RegisterValidatorsFromAssemblyContaining<Startup>();
+            //});
+            //services.ConfigureMapper();
 
-            services.AddControllers().AddNewtonsoftJson(options =>
-    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-);
+//            services.AddControllers().AddNewtonsoftJson(options =>
+//    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+//);
             services.AddSwaggerGen();
             services.AddHttpClient();
             services.AddHttpContextAccessor();
+            var setting = new SettingService(Configuration.GetValue<string>("WeatherApiKey"));
+            services.AddSingleton(i => setting);
 
             //services.AddMvc();
             //services.AddSwaggerGen(c =>
@@ -57,6 +69,12 @@ namespace WeatherApp.API
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IStatisticalInfoService, StatisticalInfoService>();
             
+            services.AddTransient<IAPIWeatherProvider, APIWeatherProvider>();
+            
+            services.ConfigureMapper();
+            services.AddScoped<IValidator<CityDto>, CityValidator>();
+            services.AddScoped<IValidator<TemperatureDto>, TemperatureValidator>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,11 +92,6 @@ namespace WeatherApp.API
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            
-
-            
-            
 
             app.UseHttpsRedirection();
 

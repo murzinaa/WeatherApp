@@ -1,8 +1,10 @@
-﻿using System;
+﻿using AutoMapper;
+using FluentValidation;
 using System.Linq;
 using System.Threading.Tasks;
 using WeatherApp.DataLayer;
 using WeatherApp.DataLayer.Entities;
+using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Interfaces;
 
 namespace WeatherApp.DomainLayer.Services
@@ -10,17 +12,27 @@ namespace WeatherApp.DomainLayer.Services
     public class CityService : ICityService
     {
         private readonly WeatherContext _context;
+        private readonly IValidator<CityDto> _validator;
+        private readonly IMapper _mapper;
 
-        public CityService(WeatherContext context)
+        public CityService(WeatherContext context, IValidator<CityDto> validator, IMapper mapper)
         {
             _context = context;
+            _validator = validator;
+            _mapper = mapper;
         }
 
-        public async Task CreateCity(City city)
+        public async Task CreateCity(CityDto city)
         {
             if (GetCityByCityName(city.Name) == null)
             {
-                await _context.AddAsync(city);
+                var result = _validator.Validate(city);
+                if (!result.IsValid)
+                {
+                    throw new ValidationException(result.Errors);
+                }
+                var cityRes = _mapper.Map<City>(city);
+                await _context.Cities.AddAsync(cityRes);
                 await _context.SaveChangesAsync();
             }
             // else return info that city is already in db
