@@ -32,6 +32,23 @@ namespace WeatherApp.DataLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Kyiv"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Lviv"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Kharkiv"
+                        });
                 });
 
             modelBuilder.Entity("WeatherApp.DataLayer.Entities.Temperature", b =>
@@ -55,6 +72,36 @@ namespace WeatherApp.DataLayer.Migrations
                     b.HasIndex("CityId");
 
                     b.ToTable("Temperature");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CityId = 1,
+                            DateTime = new DateTime(2022, 3, 15, 10, 7, 7, 77, DateTimeKind.Local).AddTicks(8983),
+                            Degrees = 12.0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CityId = 3,
+                            DateTime = new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified),
+                            Degrees = 0.0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CityId = 2,
+                            DateTime = new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified),
+                            Degrees = -5.0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CityId = 2,
+                            DateTime = new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified),
+                            Degrees = 10.0
+                        });
                 });
 
             modelBuilder.Entity("WeatherApp.DataLayer.Entities.Temperature", b =>

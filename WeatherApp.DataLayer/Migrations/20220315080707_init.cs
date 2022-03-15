@@ -41,6 +41,32 @@ namespace WeatherApp.DataLayer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Cities",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 1, "Kyiv" });
+
+            migrationBuilder.InsertData(
+                table: "Cities",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 2, "Lviv" });
+
+            migrationBuilder.InsertData(
+                table: "Cities",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 3, "Kharkiv" });
+
+            migrationBuilder.InsertData(
+                table: "Temperature",
+                columns: new[] { "Id", "CityId", "DateTime", "Degrees" },
+                values: new object[,]
+                {
+                    { 1, 1, new DateTime(2022, 3, 15, 10, 7, 7, 77, DateTimeKind.Local).AddTicks(8983), 12.0 },
+                    { 3, 2, new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified), -5.0 },
+                    { 4, 2, new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified), 10.0 },
+                    { 2, 3, new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified), 0.0 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Temperature_CityId",
                 table: "Temperature",
