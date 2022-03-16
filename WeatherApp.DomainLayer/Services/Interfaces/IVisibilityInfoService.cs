@@ -1,4 +1,4 @@
-﻿namespace WeatherApp.DomainLayer.Interfaces
+﻿namespace WeatherApp.DomainLayer.Services.Interfaces
 {
     public interface IVisibilityInfoService
     {

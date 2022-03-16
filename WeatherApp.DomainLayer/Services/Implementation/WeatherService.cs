@@ -7,10 +7,10 @@ using WeatherApp.APIProviders.Models;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Exeptions;
-using WeatherApp.DomainLayer.Interfaces;
 using WeatherApp.DomainLayer.Repositories.Interfases;
+using WeatherApp.DomainLayer.Services.Interfaces;
 
-namespace WeatherApp.DomainLayer.Services
+namespace WeatherApp.DomainLayer.Services.Implementation
 {
     public class WeatherService : IWeatherService
     {
@@ -45,13 +45,11 @@ namespace WeatherApp.DomainLayer.Services
             await _weatherRepository.CreateWeatherCondition(_mapper.Map<WeatherCondition>(weatherCondition));
         }
 
-        // потом решить шо и как
         public async Task UpdateWeatherCondition(WeatherConditionDto weatherCondition)
         {
-            //var temp = await _weatherRepository.GetWeatherCondition(weatherCondition.Id);
+            
             var temp = _weatherRepository.GetFirstWeatherCondition(weatherCondition.Id);
-                
-                //_context.WeatherConditions.Where(t => t.Id == weatherCondition.Id).ToList().FirstOrDefault();
+
 
             if (temp != null)
             {

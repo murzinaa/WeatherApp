@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using WeatherApp.APIProviders.Models;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
 
-namespace WeatherApp.DomainLayer.Interfaces
+namespace WeatherApp.DomainLayer.Services.Interfaces
 {
     public interface IWeatherService
     {
@@ -14,7 +13,7 @@ namespace WeatherApp.DomainLayer.Interfaces
         City GetWeatherHistory(string CityName);
         Task<WeatherResult> GetCurrentWeather(string url, int id);
         Task ArchiveWeatherCondition(int id);
-        
+
 
     }
 }

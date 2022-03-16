@@ -7,21 +7,24 @@ using WeatherApp.DataLayer;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Exeptions;
-using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Repositories.Interfases;
+using WeatherApp.DomainLayer.Services.Interfaces;
 
-namespace WeatherApp.DomainLayer.Services
+namespace WeatherApp.DomainLayer.Services.Implementation
 {
     public class CityService : ICityService
     {
         private readonly WeatherContext _context;
         private readonly IValidator<CityDto> _validator;
         private readonly IMapper _mapper;
+        private readonly ICityRepository _cityRepository;
 
-        public CityService(WeatherContext context, IValidator<CityDto> validator, IMapper mapper)
+        public CityService(WeatherContext context, IValidator<CityDto> validator, IMapper mapper, ICityRepository cityRepository)
         {
             _context = context;
             _validator = validator;
             _mapper = mapper;
+            _cityRepository = cityRepository;
         }
 
         public async Task CreateCity(CityDto city)
@@ -33,30 +36,30 @@ namespace WeatherApp.DomainLayer.Services
                 {
                     throw new ValidationException(result.Errors);
                 }
-                var cityRes = _mapper.Map<City>(city);
-                await _context.Cities.AddAsync(cityRes);
-                await _context.SaveChangesAsync();
+               
+                await _cityRepository.CreateCity(_mapper.Map<City>(city));
             }
-            // else
-            //     throw new System.Exception(Constants.Constants.ExceptionMessages.City.CityAlreadyCreated);
+           
         }
 
         public async Task DeleteCity(int id)
         {
-            var model = await _context.Set<City>().FindAsync(id);
+          
+            var model = await GetCityByCityId(id);
             if (model != null)
             {
-                _context.Remove(model);
-                await _context.SaveChangesAsync();
+                await _cityRepository.DeleteCity(model);
+
             }
             else
+            {
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
+            }
         }
 
         public async Task<City> GetCityByCityId(int id)
         {
-            var model = await _context.Set<City>().FindAsync(id);
-            return model;
+        return await _cityRepository.GetCityByCityId(id);
         }
 
         public City GetCityByCityName(string cityName)

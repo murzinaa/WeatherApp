@@ -11,8 +11,8 @@ namespace WeatherApp.API.Mapper
         {
             CreateMap<CityDto, City>();
             CreateMap<City, CityDto>();
-
             CreateMap<WeatherConditionDto, WeatherCondition>();
+            CreateMap<WeatherCondition, WeatherConditionDto>();
             CreateMap<WeatherCondition, WeatherInfoModel>();
             CreateMap<WeatherCondition, WeatherModel>();
         }

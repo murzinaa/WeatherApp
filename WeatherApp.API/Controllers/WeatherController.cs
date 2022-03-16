@@ -9,7 +9,7 @@ using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.Constants;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Exeptions;
-using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Services.Interfaces;
 using WeatherApp.Models;
 
 namespace WeatherApp.API.Controllers
@@ -19,16 +19,14 @@ namespace WeatherApp.API.Controllers
     public class WeatherController : ControllerBase
     {
         private readonly IWeatherService _weatherService;
-        private readonly IMapper _mapper;
         private readonly ICityService _cityService;
         private readonly WeatherHelper _weatherHelper;
         private readonly StatisticalInfoHelper _statisticalInfoHelper;
         private readonly CasheHelper _casheHelper;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, WeatherHelper weatherHelper, StatisticalInfoHelper statisticalInfoHelper, CasheHelper casheHelper)
+        public WeatherController(IWeatherService weatherService, ICityService cityService, WeatherHelper weatherHelper, StatisticalInfoHelper statisticalInfoHelper, CasheHelper casheHelper)
         {
             _weatherService = weatherService;
-            _mapper = mapper;
             _cityService = cityService;
             _weatherHelper = weatherHelper;
             _statisticalInfoHelper = statisticalInfoHelper;
@@ -36,8 +34,7 @@ namespace WeatherApp.API.Controllers
         }
 
         [HttpPost]
-        [Route("weather")]
-        public async Task<IActionResult> CreateWeatherCondition(string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
+        public async Task<IActionResult> CreateWeather(string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
             {
@@ -70,8 +67,8 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpDelete("weather/{id}")]
-        public async Task<IActionResult> DeleteTemperature(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteWeather(int id)
         {
             try
             {
@@ -84,8 +81,8 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpPut("weather/{id}")]
-        public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateWeather(int id, string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
             {
@@ -120,15 +117,29 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpPut("weather/{id}/archive")]
-        public async Task Archive(int id) => await _weatherService.ArchiveWeatherCondition(id);
+        [HttpPut("{id}/archive")]
+        public async Task<IActionResult> Archive(int id)
+        {
+            try
+            {
+                await _weatherService.ArchiveWeatherCondition(id);
+                return Ok();
+            }
+            catch (Exception e)
+            {
 
-        [HttpGet("weather/{city}/history")]
-        public IActionResult GetTemperatureHistory(string city)
+                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+            }
+           
+        }
+
+        [HttpGet("{city}/history")]
+        public IActionResult GetWeatherHistory(string city)
         {
 
 
             WeatherInfoModel resModel = new WeatherInfoModel();
+
             if (!_casheHelper.GetCashe($"WeatherList_{city}", out resModel))
             {
                 if (resModel == null)
@@ -151,7 +162,7 @@ namespace WeatherApp.API.Controllers
 
 
 
-        [HttpGet("weather/{city}")]
+        [HttpGet("{city}/info")]
         public async Task<IActionResult> StatisticalInfo(string city)
         {
             StatisticalInfoModel resModel = new StatisticalInfoModel();
@@ -177,7 +188,7 @@ namespace WeatherApp.API.Controllers
                     }
                     catch (Exception e)
                     {
-                        return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                        return StatusCode(StatusCodes.Status404NotFound, e.Message);
                     }
                 }
                 _casheHelper.SetCashe($"StatisticalInfo_{city}", resModel, 60);

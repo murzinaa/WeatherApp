@@ -1,9 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using WeatherApp.DomainLayer.DTOs;
-using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Services.Interfaces;
 
 namespace WeatherApp.API.Controllers
 {
@@ -12,12 +11,10 @@ namespace WeatherApp.API.Controllers
     public class CityController : Controller
     {
         private readonly ICityService _cityService;
-        private readonly IMapper _mapper;
 
-        public CityController(ICityService cityService, IMapper mapper)
+        public CityController(ICityService cityService)
         {
             _cityService = cityService;
-            _mapper = mapper;
         }
 
         [HttpDelete("{id}")]
@@ -35,18 +32,22 @@ namespace WeatherApp.API.Controllers
         }
 
 
-        [HttpPost("create/{cityName}")]
+        [HttpPost("{cityName}")]
         public async Task<IActionResult> AddCity(string cityName)
         {
             try
             {
-                var city = new CityDto { Name = cityName };
+                var city = new CityDto
+                {
+                    Name = cityName 
+                };
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                var dto = _mapper.Map<CityDto>(city);
-                await _cityService.CreateCity(dto);
+
+                await _cityService.CreateCity(city);
                 return Ok();
             }
             catch (Exception e)

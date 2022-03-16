@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using WeatherApp.DomainLayer.Constants;
-using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Services.Interfaces;
 using WeatherApp.Models;
 
 namespace WeatherApp.API.Helpers
@@ -13,6 +13,8 @@ namespace WeatherApp.API.Helpers
         private readonly IHumidityInfoService _humidityInfoService;
         private readonly IWeatherService _weatherService;
         private readonly SettingService _settingService;
+
+
         public StatisticalInfoHelper(ITemperatureInfoService statisticalInfoService, IVisibilityInfoService visibilityInfoService, IPressureInfoService pressureInfoService, IHumidityInfoService humidityInfoService, IWeatherService weatherService, SettingService settingService)
         {
             _statisticalInfoService = statisticalInfoService;
@@ -22,6 +24,8 @@ namespace WeatherApp.API.Helpers
             _weatherService = weatherService;
             _settingService = settingService;
         }
+
+
         public async Task<StatisticalInfoModel> GetStatisticalInfo(int id, string cityName)
         {
             var currentWeatherInfo = await _weatherService.GetCurrentWeather

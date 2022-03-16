@@ -5,8 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WeatherApp.DataLayer;
-using WeatherApp.DomainLayer.Services;
-using WeatherApp.DomainLayer.Interfaces;
 using WeatherApp.API.Extensions;
 using WeatherApp.APIProviders;
 using FluentValidation.AspNetCore;
@@ -16,6 +14,8 @@ using WeatherApp.DomainLayer.Validation;
 using WeatherApp.API.Helpers;
 using WeatherApp.DomainLayer.Repositories.Interfases;
 using WeatherApp.DomainLayer.Repositories.Implementation;
+using WeatherApp.DomainLayer.Services.Implementation;
+using WeatherApp.DomainLayer.Services.Interfaces;
 
 namespace WeatherApp.API
 {
@@ -38,8 +38,11 @@ namespace WeatherApp.API
             }); ;
            
             services.AddSwaggerGen();
+
             services.AddHttpClient();
+
             services.AddHttpContextAccessor();
+
             var setting = new SettingService(Configuration.GetValue<string>("WeatherApiKey"));
             services.AddSingleton(i => setting);
 
@@ -51,18 +54,30 @@ namespace WeatherApp.API
             services.AddTransient<IWeatherRepository, WeatherRepository>();
 
             services.AddTransient<ICityService, CityService>();
+            services.AddTransient<ICityRepository, CityRepository>();
+
             services.AddTransient<ITemperatureInfoService, TemperatureInfoService>();
+
             services.AddTransient<IVisibilityInfoService, VisibilityInfoService>();
+
             services.AddTransient<IPressureInfoService, PressureInfoService>();
+
             services.AddTransient<IHumidityInfoService, HumidityInfoService>();
+
             services.AddTransient<IAPIWeatherProvider, APIWeatherProvider>();
+
             services.AddTransient<WeatherHelper>();
+
             services.AddTransient<StatisticalInfoHelper>();
+
             services.AddTransient<CasheHelper>();
-           
-            services.ConfigureMapper();
+
             services.AddScoped<IValidator<CityDto>, CityValidator>();
+
             services.AddScoped<IValidator<WeatherConditionDto>, WeatherConditionValidator>();
+
+            services.ConfigureMapper();
+
             services.AddMemoryCache();
 
         }

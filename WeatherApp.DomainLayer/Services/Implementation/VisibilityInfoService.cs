@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using WeatherApp.DataLayer;
-using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Services.Interfaces;
 
-namespace WeatherApp.DomainLayer.Services
+namespace WeatherApp.DomainLayer.Services.Implementation
 {
     public class VisibilityInfoService : IVisibilityInfoService
     {

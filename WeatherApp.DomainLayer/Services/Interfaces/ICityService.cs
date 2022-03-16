@@ -2,7 +2,7 @@
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
 
-namespace WeatherApp.DomainLayer.Interfaces
+namespace WeatherApp.DomainLayer.Services.Interfaces
 {
     public interface ICityService
     {
