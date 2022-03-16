@@ -21,27 +21,17 @@ namespace WeatherApp.API.Controllers
         private readonly IWeatherService _weatherService;
         private readonly IMapper _mapper;
         private readonly ICityService _cityService;
-        private readonly ITemperatureInfoService _statisticalInfoService;
-        private readonly IVisibilityInfoService _visibilityInfoService;
-        private readonly IPressureInfoService _pressureInfoService;
-        private readonly IHumidityInfoService _humidityInfoService;
-        private readonly SettingService _settingService;
         private readonly WeatherHelper _weatherHelper;
         private readonly StatisticalInfoHelper _statisticalInfoHelper;
         private readonly IMemoryCache _memoryCache;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, ITemperatureInfoService statisticalInfoService, SettingService settingService, WeatherHelper weatherHelper, IMemoryCache memoryCache, IVisibilityInfoService visibilityInfoService, IPressureInfoService pressureInfoService, IHumidityInfoService humidityInfoService, StatisticalInfoHelper statisticalInfoHelper)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, WeatherHelper weatherHelper, IMemoryCache memoryCache, StatisticalInfoHelper statisticalInfoHelper)
         {
             _weatherService = weatherService;
             _mapper = mapper;
             _cityService = cityService;
-            _statisticalInfoService = statisticalInfoService;
-            _settingService = settingService;
             _weatherHelper = weatherHelper;
             _memoryCache = memoryCache;
-            _visibilityInfoService = visibilityInfoService;
-            _pressureInfoService = pressureInfoService;
-            _humidityInfoService = humidityInfoService;
             _statisticalInfoHelper = statisticalInfoHelper;
         }
 

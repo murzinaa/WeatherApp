@@ -45,17 +45,7 @@ namespace WeatherApp.DomainLayer.Services
 
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
             }
-            //if (temp != null)
-            //{
-            //    temp.IsArchieved = true;
-
-            //    await _context.SaveChangesAsync();
-
-            //}
-            //else
-            //{
-            //    throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
-            //}
+            
         }
 
         public async Task CreateWeatherCondition(WeatherConditionDto weatherCondition)
@@ -128,7 +118,6 @@ namespace WeatherApp.DomainLayer.Services
                 if (temp != null)
                 {
                     var weatherForecasts = _context.WeatherConditions.Where(t => t.CityId == id).ToList();
-                    //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
                     return weatherForecasts;
                 }
                 else throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
@@ -139,42 +128,6 @@ namespace WeatherApp.DomainLayer.Services
         }
 
     }
-        //   var city = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault();
-
-        //    if (city != null)
-        //    {
-        //        var id = city.Id;
-        //        var temp = _context.Temperature.FirstOrDefault(t => t.CityId == id);
-        //        if (temp != null)
-        //        {
-        //            var weatherForecasts = _context.Temperature.Where(t => t.CityId == id).ToList();
-        //            //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
-        //            return weatherForecasts;
-        //        }
-        //        else throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
-
-        //    }
-        //    else
-        //        throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
-        //}
-
-        //public async Task UpdateWeatherCondition(Temperature temperature)
-        //{
-        //   var temp = _context.Temperature.Where(t => t.Id == temperature.Id).ToList().FirstOrDefault<Temperature>();
-
-        //    if (temp != null)
-        //    {
-        //        temp.CityId = temperature.CityId;
-        //        temp.Degrees = temperature.Degrees;
-        //        temp.DateTime = temperature.DateTime;
-
-        //        await _context.SaveChangesAsync();
-
-        //    }
-
-
-        //}
-
 
     }
 

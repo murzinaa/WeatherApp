@@ -36,7 +36,8 @@ namespace WeatherApp.DomainLayer.Services
                 await _context.Cities.AddAsync(cityRes);
                 await _context.SaveChangesAsync();
             }
-            // else return info that city is already in db
+            else
+                throw new System.Exception(Constants.Constants.ExceptionMessages.City.CityAlreadyCreated);
         }
 
         public async Task DeleteCity(int id)
@@ -63,12 +64,5 @@ namespace WeatherApp.DomainLayer.Services
             return model;
         }
 
-        //public List<Temperature> GetWeatherHistory(string CityName)
-        //{
-        //    var id = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault().Id;
-        //    var model = _context.Temperature.Where(t => t.CityId == id).ToList();
-        //    //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
-        //    return model;
-        //}
     }
 }

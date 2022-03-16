@@ -11,17 +11,8 @@ namespace WeatherApp.API.Mapper
         {
             CreateMap<CityDto, City>();
             CreateMap<WeatherConditionDto, WeatherCondition>();
-
-
-
-            //CreateMap<WeatherApp.DataLayer.Entities.Temperature, WeatherApp.Models.TemperatureModel>()
-            //   ;
             CreateMap<WeatherCondition, WeatherInfoModel>();
             CreateMap<WeatherCondition, WeatherModel>();
-            //CreateMap<City, CityModel>();
-            
-            //CreateMap<Temperature, StatisticalInfoModel>();
-                //.ForMember(s => s.Average, opt => opt.MapFrom(c => ));
         }
     }
 }
