@@ -11,7 +11,7 @@ namespace WeatherApp.DomainLayer.Interfaces
         Task CreateWeatherCondition(WeatherConditionDto weatherCondition);
         Task UpdateWeatherCondition(WeatherConditionDto weatherCondition);
         Task DeleteWeatherCondition(int id);
-        List<WeatherCondition> GetWeatherHistory(string CityName);
+        City GetWeatherHistory(string CityName);
         Task<WeatherResult> GetCurrentWeather(string url, int id);
         Task ArchiveWeatherCondition(int id);
         

@@ -1,51 +1,36 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using WeatherApp.APIProviders;
 using WeatherApp.APIProviders.Models;
-using WeatherApp.DataLayer;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Exeptions;
 using WeatherApp.DomainLayer.Interfaces;
+using WeatherApp.DomainLayer.Repositories.Interfases;
 
 namespace WeatherApp.DomainLayer.Services
 {
     public class WeatherService : IWeatherService
     {
-        private readonly WeatherContext _context;
         private readonly IAPIWeatherProvider _apiWeatherProvider;
         private readonly IValidator<WeatherConditionDto> _validator;
         private readonly IMapper _mapper;
+        private readonly IWeatherRepository _weatherRepository;
 
-        public WeatherService(WeatherContext context, IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<WeatherConditionDto> validator)
+        public WeatherService(IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<WeatherConditionDto> validator, IWeatherRepository weatherRepository)
         {
-            _context = context;
             _apiWeatherProvider = apiWeatherProvider;
             _mapper = mapper;
             _validator = validator;
-          
+            _weatherRepository = weatherRepository;
         }
 
         public async Task ArchiveWeatherCondition(int id)
         {
+            await _weatherRepository.ArchiveWeatherCondition(id);
 
-            try
-            {
-                var temp = _context.WeatherConditions.Where(t => t.Id == id).ToList().First<WeatherCondition>();
-                temp.IsArchieved = true;
-
-                await _context.SaveChangesAsync();
-            }
-            catch
-            {
-
-                throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
-            }
-            
         }
 
         public async Task CreateWeatherCondition(WeatherConditionDto weatherCondition)
@@ -57,14 +42,16 @@ namespace WeatherApp.DomainLayer.Services
                 throw new ValidationException(result.Errors);
             }
 
-            var temp = _mapper.Map<WeatherCondition>(weatherCondition);
-
-            await _context.AddAsync(temp);
-            await _context.SaveChangesAsync();
+            await _weatherRepository.CreateWeatherCondition(_mapper.Map<WeatherCondition>(weatherCondition));
         }
+
+        // потом решить шо и как
         public async Task UpdateWeatherCondition(WeatherConditionDto weatherCondition)
         {
-            var temp = _context.WeatherConditions.Where(t => t.Id == weatherCondition.Id).ToList().FirstOrDefault<WeatherCondition>();
+            //var temp = await _weatherRepository.GetWeatherCondition(weatherCondition.Id);
+            var temp = _weatherRepository.GetFirstWeatherCondition(weatherCondition.Id);
+                
+                //_context.WeatherConditions.Where(t => t.Id == weatherCondition.Id).ToList().FirstOrDefault();
 
             if (temp != null)
             {
@@ -74,63 +61,60 @@ namespace WeatherApp.DomainLayer.Services
                 {
                     throw new ValidationException(result.Errors);
                 }
+                await _weatherRepository.UpdateWeatherCondition(weatherCondition, temp);
 
-                temp.CityId = weatherCondition.CityId;
-                temp.Degrees = weatherCondition.Degrees;
-                temp.DateTime = weatherCondition.DateTime;
-                temp.Visibility = weatherCondition.Visibility;
-                temp.Humidity = weatherCondition.Humidity;
-                temp.Pressure = weatherCondition.Pressure;
-
-                await _context.SaveChangesAsync();
             }
             else
+            {
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
-
+            }
         }
         public async Task DeleteWeatherCondition(int id)
         {
-            var model = await _context.Set<WeatherCondition>().FindAsync(id);
+            var model = await _weatherRepository.GetWeatherCondition(id);
 
             if (model != null)
             {
-                _context.Remove(model);
-                await _context.SaveChangesAsync();
+                await _weatherRepository.DeleteWeatherCondition(model);
             }
             else
+            {
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
+            }
         }
 
         public async Task<WeatherResult> GetCurrentWeather(string url, int id)
         {
             var result = await _apiWeatherProvider.GetCurrentWeather(url);
-            await CreateWeatherCondition(new WeatherConditionDto { CityId = id, DateTime = DateTime.Now, Degrees = result.MainInfo.Temp });
+            await CreateWeatherCondition(new WeatherConditionDto
+            {
+                CityId = id,
+                DateTime = DateTime.Now,
+                Degrees = result.MainInfo.Temp,
+                Humidity = result.MainInfo.Humidity,
+                Pressure = result.MainInfo.Pressure
+            });
 
             return result;
         }
 
 
-        public List<WeatherCondition> GetWeatherHistory(string CityName)
+        public City GetWeatherHistory(string CityName)
         {
-            var city = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault();
+            var city = _weatherRepository.GetWeatherHistory(CityName);
 
             if (city != null)
             {
-                var id = city.Id;
-                var temp = _context.WeatherConditions.FirstOrDefault(t => t.CityId == id);
-                if (temp != null)
-                {
-                    var weatherForecasts = _context.WeatherConditions.Where(t => t.CityId == id).ToList();
-                    return weatherForecasts;
-                }
-                else throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
+                return city;
 
             }
             else
+            {
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
+            }
         }
 
     }
 
-    }
+}
 

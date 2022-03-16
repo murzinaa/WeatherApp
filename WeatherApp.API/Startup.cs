@@ -14,6 +14,8 @@ using FluentValidation;
 using WeatherApp.DomainLayer.DTOs;
 using WeatherApp.DomainLayer.Validation;
 using WeatherApp.API.Helpers;
+using WeatherApp.DomainLayer.Repositories.Interfases;
+using WeatherApp.DomainLayer.Repositories.Implementation;
 
 namespace WeatherApp.API
 {
@@ -44,7 +46,10 @@ namespace WeatherApp.API
             services.AddDbContext<WeatherContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")),
                 ServiceLifetime.Transient);
+
             services.AddTransient<IWeatherService, WeatherService>();
+            services.AddTransient<IWeatherRepository, WeatherRepository>();
+
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<ITemperatureInfoService, TemperatureInfoService>();
             services.AddTransient<IVisibilityInfoService, VisibilityInfoService>();
@@ -53,6 +58,7 @@ namespace WeatherApp.API
             services.AddTransient<IAPIWeatherProvider, APIWeatherProvider>();
             services.AddTransient<WeatherHelper>();
             services.AddTransient<StatisticalInfoHelper>();
+            services.AddTransient<CasheHelper>();
            
             services.ConfigureMapper();
             services.AddScoped<IValidator<CityDto>, CityValidator>();

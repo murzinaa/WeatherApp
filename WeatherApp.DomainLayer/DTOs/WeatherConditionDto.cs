@@ -11,7 +11,7 @@ namespace WeatherApp.DomainLayer.DTOs
         public double Visibility { get; set; }
         public double Pressure { get; set; }
         public DateTime DateTime { get; set; }
-        public bool IsArchieved { get; set; }
+        public bool IsArchieved { get; set; } = false;
         public virtual CityDto City { get; set; }
     }
 }

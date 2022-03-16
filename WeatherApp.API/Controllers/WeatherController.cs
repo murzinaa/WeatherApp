@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using WeatherApp.API.Helpers;
 using WeatherApp.DataLayer.Entities;
@@ -23,27 +23,27 @@ namespace WeatherApp.API.Controllers
         private readonly ICityService _cityService;
         private readonly WeatherHelper _weatherHelper;
         private readonly StatisticalInfoHelper _statisticalInfoHelper;
-        private readonly IMemoryCache _memoryCache;
+        private readonly CasheHelper _casheHelper;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, WeatherHelper weatherHelper, IMemoryCache memoryCache, StatisticalInfoHelper statisticalInfoHelper)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, WeatherHelper weatherHelper, StatisticalInfoHelper statisticalInfoHelper, CasheHelper casheHelper)
         {
             _weatherService = weatherService;
             _mapper = mapper;
             _cityService = cityService;
             _weatherHelper = weatherHelper;
-            _memoryCache = memoryCache;
             _statisticalInfoHelper = statisticalInfoHelper;
+            _casheHelper = casheHelper;
         }
 
         [HttpPost]
-        [Route("createWeatherCondition")]
+        [Route("weather")]
         public async Task<IActionResult> CreateWeatherCondition(string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
             {
+               
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
-
                 var weatherCondition = new WeatherConditionDto
                 {
                     CityId = cityId,
@@ -59,7 +59,7 @@ namespace WeatherApp.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                await _weatherService.CreateWeatherCondition(_mapper.Map<WeatherConditionDto>(weatherCondition));
+                await _weatherService.CreateWeatherCondition(weatherCondition);
 
                 return Ok();
             }
@@ -70,7 +70,7 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("weather/{id}")]
         public async Task<IActionResult> DeleteTemperature(int id)
         {
             try
@@ -84,7 +84,7 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpPut("update")]
+        [HttpPut("weather/{id}")]
         public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
@@ -92,14 +92,25 @@ namespace WeatherApp.API.Controllers
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                var weatherCondition = new WeatherConditionDto { Id = id, CityId = cityId, Degrees = degrees,Pressure = pressure, Humidity = humidity, Visibility = visibility, DateTime = _weatherHelper.GetDateTime(dateTime) };
+                var weatherCondition = new WeatherConditionDto 
+                {
+                    Id = id,
+                    CityId = cityId, 
+                    Degrees = degrees, 
+                    Pressure = pressure, 
+                    Humidity = humidity,
+                    Visibility = visibility,
+                    DateTime = _weatherHelper.GetDateTime(dateTime) 
+                };
+
+
 
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
-                await _weatherService.UpdateWeatherCondition(_mapper.Map<WeatherConditionDto>(weatherCondition));
+                await _weatherService.UpdateWeatherCondition(weatherCondition);
 
                 return Ok();
             }
@@ -109,43 +120,30 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpPut("archive/{id}")]
+        [HttpPut("weather/{id}/archive")]
         public async Task Archive(int id) => await _weatherService.ArchiveWeatherCondition(id);
 
-        [HttpGet("getHistory/{city}")]
-        //WeatherInfoModel
+        [HttpGet("weather/{city}/history")]
         public IActionResult GetTemperatureHistory(string city)
         {
 
 
             WeatherInfoModel resModel = new WeatherInfoModel();
-
-            if (!_memoryCache.TryGetValue($"WeatherList_{city}", out resModel))
+            if (!_casheHelper.GetCashe($"WeatherList_{city}", out resModel))
             {
                 if (resModel == null)
                 {
                     try
                     {
-
-                        List<WeatherCondition> result = _weatherService.GetWeatherHistory(city);
-                        resModel = new WeatherInfoModel()
-                        {
-                            CityId = result[0].CityId,
-                            CityName = result[0].City.Name
-                        };
-
-                        var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
-                        infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
+                        City res = _weatherService.GetWeatherHistory(city);
+                        resModel = _weatherHelper.FillModel(res);
                     }
                     catch (Exception e)
                     {
                         return BadRequest(e.Message);
                     }
                 }
-                _memoryCache.Set($"WeatherList_{city}", resModel, new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-                });
+                _casheHelper.SetCashe($"WeatherList_{city}", resModel, 30);
             }
             return Ok(resModel);
 
@@ -153,44 +151,40 @@ namespace WeatherApp.API.Controllers
 
 
 
-        [HttpGet("statisticalInfo")]
-        public async Task<IActionResult> StatisticalInfo(string cityName)
+        [HttpGet("weather/{city}")]
+        public async Task<IActionResult> StatisticalInfo(string city)
         {
-            StatisticalInfoModel model = new StatisticalInfoModel();
+            StatisticalInfoModel resModel = new StatisticalInfoModel();
 
-            if (!_memoryCache.TryGetValue($"StatisticalInfo_{cityName}", out model))
+            if (!_casheHelper.GetCashe($"StatisticalInfo_{city}", out resModel))
             {
-                if (model == null)
+                if (resModel == null)
                 {
                     try
                     {
-                        if (_cityService.GetCityByCityName(cityName) == null)
-                        {
-                            throw new NotFoundException(Constants.ExceptionMessages.City.NotFoundException);
+                        var getCity = _cityService.GetCityByCityName(city);
 
+                        if (getCity == null)
+                        {
+                            throw new  NotFoundException(Constants.ExceptionMessages.City.NotFoundException);
 
                         }
                         else
                         {
-
-                            int id = _cityService.GetCityByCityName(cityName).Id;
-                            model = await _statisticalInfoHelper.GetStatisticalInfo(id, cityName);
-
+                            int id = getCity.Id;
+                            resModel = await _statisticalInfoHelper.GetStatisticalInfo(id, city);
                         }
                     }
                     catch (Exception e)
                     {
-                        return BadRequest(e.Message);
+                        return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
                     }
                 }
-                _memoryCache.Set($"StatisticalInfo_{cityName}", model, new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60)
-                });
+                _casheHelper.SetCashe($"StatisticalInfo_{city}", resModel, 60);
 
             }
 
-            return Ok(model);
+            return Ok(resModel);
 
         }
     }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using WeatherApp.DataLayer;
@@ -36,8 +37,8 @@ namespace WeatherApp.DomainLayer.Services
                 await _context.Cities.AddAsync(cityRes);
                 await _context.SaveChangesAsync();
             }
-            else
-                throw new System.Exception(Constants.Constants.ExceptionMessages.City.CityAlreadyCreated);
+            // else
+            //     throw new System.Exception(Constants.Constants.ExceptionMessages.City.CityAlreadyCreated);
         }
 
         public async Task DeleteCity(int id)
