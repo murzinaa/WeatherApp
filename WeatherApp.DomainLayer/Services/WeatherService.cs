@@ -78,6 +78,9 @@ namespace WeatherApp.DomainLayer.Services
                 temp.CityId = weatherCondition.CityId;
                 temp.Degrees = weatherCondition.Degrees;
                 temp.DateTime = weatherCondition.DateTime;
+                temp.Visibility = weatherCondition.Visibility;
+                temp.Humidity = weatherCondition.Humidity;
+                temp.Pressure = weatherCondition.Pressure;
 
                 await _context.SaveChangesAsync();
             }

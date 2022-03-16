@@ -85,14 +85,14 @@ namespace WeatherApp.API.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees, string dateTime = null)
+        public async Task<IActionResult> UpdateTemperature(int id, string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                var weatherCondition = new WeatherConditionDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
+                var weatherCondition = new WeatherConditionDto { Id = id, CityId = cityId, Degrees = degrees,Pressure = pressure, Humidity = humidity, Visibility = visibility, DateTime = _weatherHelper.GetDateTime(dateTime) };
 
                 if (!ModelState.IsValid)
                 {
