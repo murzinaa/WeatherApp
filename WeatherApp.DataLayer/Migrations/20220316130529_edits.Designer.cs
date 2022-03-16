@@ -10,8 +10,8 @@ using WeatherApp.DataLayer;
 namespace WeatherApp.DataLayer.Migrations
 {
     [DbContext(typeof(WeatherContext))]
-    [Migration("20220315093905_init")]
-    partial class init
+    [Migration("20220316130529_edits")]
+    partial class edits
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,7 +29,8 @@ namespace WeatherApp.DataLayer.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
@@ -53,7 +54,7 @@ namespace WeatherApp.DataLayer.Migrations
                         });
                 });
 
-            modelBuilder.Entity("WeatherApp.DataLayer.Entities.Temperature", b =>
+            modelBuilder.Entity("WeatherApp.DataLayer.Entities.WeatherCondition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -69,23 +70,35 @@ namespace WeatherApp.DataLayer.Migrations
                     b.Property<double>("Degrees")
                         .HasColumnType("float");
 
+                    b.Property<double>("Humidity")
+                        .HasColumnType("float");
+
                     b.Property<bool>("IsArchieved")
                         .HasColumnType("bit");
+
+                    b.Property<double>("Pressure")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Visibility")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("Temperature");
+                    b.ToTable("WeatherConditions");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
                             CityId = 1,
-                            DateTime = new DateTime(2022, 3, 15, 11, 39, 5, 208, DateTimeKind.Local).AddTicks(3580),
+                            DateTime = new DateTime(2022, 3, 16, 15, 5, 28, 843, DateTimeKind.Local).AddTicks(1921),
                             Degrees = 12.0,
-                            IsArchieved = false
+                            Humidity = 80.0,
+                            IsArchieved = false,
+                            Pressure = 10.0,
+                            Visibility = 100.0
                         },
                         new
                         {
@@ -93,7 +106,10 @@ namespace WeatherApp.DataLayer.Migrations
                             CityId = 3,
                             DateTime = new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified),
                             Degrees = 0.0,
-                            IsArchieved = false
+                            Humidity = 2.0,
+                            IsArchieved = false,
+                            Pressure = 100.0,
+                            Visibility = 0.0
                         },
                         new
                         {
@@ -101,7 +117,10 @@ namespace WeatherApp.DataLayer.Migrations
                             CityId = 2,
                             DateTime = new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified),
                             Degrees = -5.0,
-                            IsArchieved = false
+                            Humidity = 33.0,
+                            IsArchieved = false,
+                            Pressure = 60.0,
+                            Visibility = 50.0
                         },
                         new
                         {
@@ -109,14 +128,17 @@ namespace WeatherApp.DataLayer.Migrations
                             CityId = 2,
                             DateTime = new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified),
                             Degrees = 10.0,
-                            IsArchieved = false
+                            Humidity = 100.0,
+                            IsArchieved = false,
+                            Pressure = 100.0,
+                            Visibility = 100.0
                         });
                 });
 
-            modelBuilder.Entity("WeatherApp.DataLayer.Entities.Temperature", b =>
+            modelBuilder.Entity("WeatherApp.DataLayer.Entities.WeatherCondition", b =>
                 {
                     b.HasOne("WeatherApp.DataLayer.Entities.City", "City")
-                        .WithMany("Temperature")
+                        .WithMany("WeatherConditions")
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -126,7 +148,7 @@ namespace WeatherApp.DataLayer.Migrations
 
             modelBuilder.Entity("WeatherApp.DataLayer.Entities.City", b =>
                 {
-                    b.Navigation("Temperature");
+                    b.Navigation("WeatherConditions");
                 });
 #pragma warning restore 612, 618
         }

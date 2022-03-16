@@ -7,12 +7,12 @@ namespace WeatherApp.DomainLayer.DTOs
     {
         public CityDto()
         {
-            Temperature = new HashSet<TemperatureDto>();
+            WeatherConditions = new HashSet<WeatherConditionDto>();
         }
 
         public int Id { get; set; }
         [StringLength(30, ErrorMessage = "Maximum length of this field is 30")]
         public string Name { get; set; }
-        public virtual ICollection<TemperatureDto> Temperature { get; set; }
+        public virtual ICollection<WeatherConditionDto> WeatherConditions { get; set; }
     }
 }

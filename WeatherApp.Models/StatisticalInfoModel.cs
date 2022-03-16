@@ -4,9 +4,10 @@
     {
         public int id { get; set; }
         public string CityName { get; set; }
-        public double CurrentTemperature { get; set; }
-        public double AverageTemperature { get; set; }
-        public double MinTemperature { get; set; }
-        public double MaxTemperature { get; set; }
+        public TemperatureInfoModel Temperature { get; set; }
+        public VisibilityInfoModel Visibility { get; set; }
+        public HumidityInfoModel Humidity { get; set; }
+        public PressureInfoModel Pressure { get; set; }
     }
+    
 }

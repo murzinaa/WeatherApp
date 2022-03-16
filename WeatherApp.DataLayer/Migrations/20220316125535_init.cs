@@ -13,7 +13,7 @@ namespace WeatherApp.DataLayer.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -28,6 +28,9 @@ namespace WeatherApp.DataLayer.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CityId = table.Column<int>(type: "int", nullable: false),
                     Degrees = table.Column<double>(type: "float", nullable: false),
+                    Humidity = table.Column<double>(type: "float", nullable: false),
+                    Visibility = table.Column<double>(type: "float", nullable: false),
+                    Pressure = table.Column<double>(type: "float", nullable: false),
                     DateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsArchieved = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -59,13 +62,13 @@ namespace WeatherApp.DataLayer.Migrations
 
             migrationBuilder.InsertData(
                 table: "Temperature",
-                columns: new[] { "Id", "CityId", "DateTime", "Degrees", "IsArchieved" },
+                columns: new[] { "Id", "CityId", "DateTime", "Degrees", "Humidity", "IsArchieved", "Pressure", "Visibility" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2022, 3, 15, 11, 39, 5, 208, DateTimeKind.Local).AddTicks(3580), 12.0, false },
-                    { 3, 2, new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified), -5.0, false },
-                    { 4, 2, new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified), 10.0, false },
-                    { 2, 3, new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified), 0.0, false }
+                    { 1, 1, new DateTime(2022, 3, 16, 14, 55, 35, 168, DateTimeKind.Local).AddTicks(6369), 12.0, 80.0, false, 10.0, 100.0 },
+                    { 3, 2, new DateTime(2022, 3, 14, 13, 30, 30, 0, DateTimeKind.Unspecified), -5.0, 33.0, false, 60.0, 50.0 },
+                    { 4, 2, new DateTime(2022, 3, 15, 9, 20, 59, 0, DateTimeKind.Unspecified), 10.0, 100.0, false, 100.0, 100.0 },
+                    { 2, 3, new DateTime(2022, 3, 14, 12, 2, 30, 0, DateTimeKind.Unspecified), 0.0, 2.0, false, 100.0, 0.0 }
                 });
 
             migrationBuilder.CreateIndex(

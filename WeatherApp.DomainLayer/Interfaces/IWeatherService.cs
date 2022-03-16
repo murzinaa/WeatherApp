@@ -8,10 +8,10 @@ namespace WeatherApp.DomainLayer.Interfaces
 {
     public interface IWeatherService
     {
-        Task CreateWeatherCondition(TemperatureDto temperature);
-        Task UpdateWeatherCondition(TemperatureDto temperature);
+        Task CreateWeatherCondition(WeatherConditionDto weatherCondition);
+        Task UpdateWeatherCondition(WeatherConditionDto weatherCondition);
         Task DeleteWeatherCondition(int id);
-        List<Temperature> GetWeatherHistory(string CityName);
+        List<WeatherCondition> GetWeatherHistory(string CityName);
         Task<WeatherResult> GetCurrentWeather(string url, int id);
         Task ArchiveWeatherCondition(int id);
         

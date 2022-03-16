@@ -21,12 +21,16 @@ namespace WeatherApp.API.Controllers
         private readonly IWeatherService _weatherService;
         private readonly IMapper _mapper;
         private readonly ICityService _cityService;
-        private readonly IStatisticalInfoService _statisticalInfoService;
+        private readonly ITemperatureInfoService _statisticalInfoService;
+        private readonly IVisibilityInfoService _visibilityInfoService;
+        private readonly IPressureInfoService _pressureInfoService;
+        private readonly IHumidityInfoService _humidityInfoService;
         private readonly SettingService _settingService;
         private readonly WeatherHelper _weatherHelper;
+        private readonly StatisticalInfoHelper _statisticalInfoHelper;
         private readonly IMemoryCache _memoryCache;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, WeatherHelper weatherHelper, IMemoryCache memoryCache)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, ITemperatureInfoService statisticalInfoService, SettingService settingService, WeatherHelper weatherHelper, IMemoryCache memoryCache, IVisibilityInfoService visibilityInfoService, IPressureInfoService pressureInfoService, IHumidityInfoService humidityInfoService, StatisticalInfoHelper statisticalInfoHelper)
         {
             _weatherService = weatherService;
             _mapper = mapper;
@@ -35,22 +39,29 @@ namespace WeatherApp.API.Controllers
             _settingService = settingService;
             _weatherHelper = weatherHelper;
             _memoryCache = memoryCache;
+            _visibilityInfoService = visibilityInfoService;
+            _pressureInfoService = pressureInfoService;
+            _humidityInfoService = humidityInfoService;
+            _statisticalInfoHelper = statisticalInfoHelper;
         }
 
         [HttpPost]
-        [Route("addTemperature")]
-        public async Task<IActionResult> AddTemperature(string cityName, double degrees, string dateTime = null)
+        [Route("createWeatherCondition")]
+        public async Task<IActionResult> CreateWeatherCondition(string cityName, double degrees, double pressure, double visibility, double humidity, string dateTime = null)
         {
             try
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                var temperature = new TemperatureDto
+                var weatherCondition = new WeatherConditionDto
                 {
                     CityId = cityId,
                     Degrees = degrees,
-                    DateTime = _weatherHelper.GetDateTime(dateTime)
+                    DateTime = _weatherHelper.GetDateTime(dateTime),
+                    Pressure = pressure,
+                    Humidity = humidity,
+                    Visibility = visibility
                 };
 
                 if (!ModelState.IsValid)
@@ -58,7 +69,7 @@ namespace WeatherApp.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                await _weatherService.CreateWeatherCondition(_mapper.Map<TemperatureDto>(temperature));
+                await _weatherService.CreateWeatherCondition(_mapper.Map<WeatherConditionDto>(weatherCondition));
 
                 return Ok();
             }
@@ -91,14 +102,14 @@ namespace WeatherApp.API.Controllers
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                var temp = new TemperatureDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
+                var weatherCondition = new WeatherConditionDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
 
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
-                await _weatherService.UpdateWeatherCondition(_mapper.Map<TemperatureDto>(temp));
+                await _weatherService.UpdateWeatherCondition(_mapper.Map<WeatherConditionDto>(weatherCondition));
 
                 return Ok();
             }
@@ -108,10 +119,10 @@ namespace WeatherApp.API.Controllers
             }
         }
 
-        [HttpPut("archive")]
+        [HttpPut("archive/{id}")]
         public async Task Archive(int id) => await _weatherService.ArchiveWeatherCondition(id);
 
-        [HttpGet("getHistory")]
+        [HttpGet("getHistory/{city}")]
         //WeatherInfoModel
         public IActionResult GetTemperatureHistory(string city)
         {
@@ -126,7 +137,7 @@ namespace WeatherApp.API.Controllers
                     try
                     {
 
-                        List<Temperature> result = _weatherService.GetWeatherHistory(city);
+                        List<WeatherCondition> result = _weatherService.GetWeatherHistory(city);
                         resModel = new WeatherInfoModel()
                         {
                             CityId = result[0].CityId,
@@ -173,19 +184,7 @@ namespace WeatherApp.API.Controllers
                         {
 
                             int id = _cityService.GetCityByCityName(cityName).Id;
-
-                            var currentWeatherInfo = await _weatherService.GetCurrentWeather
-                                (WeatherApiUrls.ReturnUrl(cityName, _settingService.ApiKey), id);
-
-                            model = new StatisticalInfoModel
-                            {
-                                id = id,
-                                CityName = cityName,
-                                CurrentTemperature = currentWeatherInfo.MainInfo.Temp,
-                                AverageTemperature = _statisticalInfoService.GetAverage(id),
-                                MinTemperature = _statisticalInfoService.GetMin(id),
-                                MaxTemperature = _statisticalInfoService.GetMax(id)
-                            };
+                            model = await _statisticalInfoHelper.GetStatisticalInfo(id, cityName);
 
                         }
                     }

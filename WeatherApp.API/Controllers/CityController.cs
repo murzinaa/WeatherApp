@@ -53,19 +53,6 @@ namespace WeatherApp.API.Controllers
             {
                 return BadRequest(e.Message);
             }
-            ////var city = new CreateCityModel { Name = cityName };
-            //CreateCityValidator validator = new CreateCityValidator();
-
-            //ValidationResult results = validator.Validate(city);
-            //if (results.IsValid)
-            //{
-            //    var model = _mapper.Map<City>(city);
-            //    await _cityService.CreateCity(model);
-            //    return Ok();
-            //}
-            //else
-            //    return BadRequest(results.Errors);
-
         }
     }
 }

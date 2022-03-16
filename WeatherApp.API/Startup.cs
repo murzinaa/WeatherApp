@@ -68,13 +68,17 @@ namespace WeatherApp.API
                 ServiceLifetime.Transient);
             services.AddTransient<IWeatherService, WeatherService>();
             services.AddTransient<ICityService, CityService>();
-            services.AddTransient<IStatisticalInfoService, StatisticalInfoService>();
-            
+            services.AddTransient<ITemperatureInfoService, TemperatureInfoService>();
+            services.AddTransient<IVisibilityInfoService, VisibilityInfoService>();
+            services.AddTransient<IPressureInfoService, PressureInfoService>();
+            services.AddTransient<IHumidityInfoService, HumidityInfoService>();
             services.AddTransient<IAPIWeatherProvider, APIWeatherProvider>();
             services.AddTransient<WeatherHelper>();
+            services.AddTransient<StatisticalInfoHelper>();
+           
             services.ConfigureMapper();
             services.AddScoped<IValidator<CityDto>, CityValidator>();
-            services.AddScoped<IValidator<TemperatureDto>, TemperatureValidator>();
+            services.AddScoped<IValidator<WeatherConditionDto>, WeatherConditionValidator>();
             services.AddMemoryCache();
 
         }

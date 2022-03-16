@@ -18,10 +18,10 @@ namespace WeatherApp.DomainLayer.Services
     {
         private readonly WeatherContext _context;
         private readonly IAPIWeatherProvider _apiWeatherProvider;
-        private readonly IValidator<TemperatureDto> _validator;
+        private readonly IValidator<WeatherConditionDto> _validator;
         private readonly IMapper _mapper;
 
-        public WeatherService(WeatherContext context, IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<TemperatureDto> validator)
+        public WeatherService(WeatherContext context, IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<WeatherConditionDto> validator)
         {
             _context = context;
             _apiWeatherProvider = apiWeatherProvider;
@@ -35,7 +35,7 @@ namespace WeatherApp.DomainLayer.Services
 
             try
             {
-                var temp = _context.Temperature.Where(t => t.Id == id).ToList().First<Temperature>();
+                var temp = _context.WeatherConditions.Where(t => t.Id == id).ToList().First<WeatherCondition>();
                 temp.IsArchieved = true;
 
                 await _context.SaveChangesAsync();
@@ -58,36 +58,36 @@ namespace WeatherApp.DomainLayer.Services
             //}
         }
 
-        public async Task CreateWeatherCondition(TemperatureDto temperature)
+        public async Task CreateWeatherCondition(WeatherConditionDto weatherCondition)
         {
-            var result = _validator.Validate(temperature);
+            var result = _validator.Validate(weatherCondition);
 
             if (!result.IsValid)
             {
                 throw new ValidationException(result.Errors);
             }
 
-            var temp = _mapper.Map<Temperature>(temperature);
+            var temp = _mapper.Map<WeatherCondition>(weatherCondition);
 
             await _context.AddAsync(temp);
             await _context.SaveChangesAsync();
         }
-        public async Task UpdateWeatherCondition(TemperatureDto temperature)
+        public async Task UpdateWeatherCondition(WeatherConditionDto weatherCondition)
         {
-            var temp = _context.Temperature.Where(t => t.Id == temperature.Id).ToList().FirstOrDefault<Temperature>();
+            var temp = _context.WeatherConditions.Where(t => t.Id == weatherCondition.Id).ToList().FirstOrDefault<WeatherCondition>();
 
             if (temp != null)
             {
-                var result = _validator.Validate(temperature);
+                var result = _validator.Validate(weatherCondition);
 
                 if (!result.IsValid)
                 {
                     throw new ValidationException(result.Errors);
                 }
 
-                temp.CityId = temperature.CityId;
-                temp.Degrees = temperature.Degrees;
-                temp.DateTime = temperature.DateTime;
+                temp.CityId = weatherCondition.CityId;
+                temp.Degrees = weatherCondition.Degrees;
+                temp.DateTime = weatherCondition.DateTime;
 
                 await _context.SaveChangesAsync();
             }
@@ -97,7 +97,7 @@ namespace WeatherApp.DomainLayer.Services
         }
         public async Task DeleteWeatherCondition(int id)
         {
-            var model = await _context.Set<Temperature>().FindAsync(id);
+            var model = await _context.Set<WeatherCondition>().FindAsync(id);
 
             if (model != null)
             {
@@ -111,23 +111,23 @@ namespace WeatherApp.DomainLayer.Services
         public async Task<WeatherResult> GetCurrentWeather(string url, int id)
         {
             var result = await _apiWeatherProvider.GetCurrentWeather(url);
-            await CreateWeatherCondition(new TemperatureDto { CityId = id, DateTime = DateTime.Now, Degrees = result.MainInfo.Temp });
+            await CreateWeatherCondition(new WeatherConditionDto { CityId = id, DateTime = DateTime.Now, Degrees = result.MainInfo.Temp });
 
             return result;
         }
 
 
-        public List<Temperature> GetWeatherHistory(string CityName)
+        public List<WeatherCondition> GetWeatherHistory(string CityName)
         {
             var city = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault();
 
             if (city != null)
             {
                 var id = city.Id;
-                var temp = _context.Temperature.FirstOrDefault(t => t.CityId == id);
+                var temp = _context.WeatherConditions.FirstOrDefault(t => t.CityId == id);
                 if (temp != null)
                 {
-                    var weatherForecasts = _context.Temperature.Where(t => t.CityId == id).ToList();
+                    var weatherForecasts = _context.WeatherConditions.Where(t => t.CityId == id).ToList();
                     //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
                     return weatherForecasts;
                 }

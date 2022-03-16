@@ -7,7 +7,7 @@ namespace WeatherApp.DataLayer
     public class WeatherContext : DbContext
     {
         public DbSet<City> Cities { get; set; }
-        public DbSet<Temperature> Temperature { get; set; }
+        public DbSet<WeatherCondition> WeatherConditions { get; set; }
 
         public WeatherContext(DbContextOptions<WeatherContext> options)
             : base(options)
@@ -19,7 +19,7 @@ namespace WeatherApp.DataLayer
         {
             base.OnModelCreating(builder);
             builder.Entity<City>().
-                HasMany(c => c.Temperature)
+                HasMany(c => c.WeatherConditions)
                 .WithOne(t => t.City)
                 .HasForeignKey(t => t.CityId);
 

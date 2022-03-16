@@ -10,14 +10,14 @@ namespace WeatherApp.API.Mapper
         public MapperProfile()
         {
             CreateMap<CityDto, City>();
-            CreateMap<TemperatureDto, Temperature>();
+            CreateMap<WeatherConditionDto, WeatherCondition>();
 
 
 
             //CreateMap<WeatherApp.DataLayer.Entities.Temperature, WeatherApp.Models.TemperatureModel>()
             //   ;
-            CreateMap<Temperature, WeatherInfoModel>();
-            CreateMap<Temperature, WeatherModel>();
+            CreateMap<WeatherCondition, WeatherInfoModel>();
+            CreateMap<WeatherCondition, WeatherModel>();
             //CreateMap<City, CityModel>();
             
             //CreateMap<Temperature, StatisticalInfoModel>();
