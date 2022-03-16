@@ -20,10 +20,6 @@ namespace WeatherApp.DomainLayer.Services
         private readonly IAPIWeatherProvider _apiWeatherProvider;
         private readonly IValidator<TemperatureDto> _validator;
         private readonly IMapper _mapper;
-       
-
-        private const string GetWeatherForecastsCacheKey = "GetWeatherForecasts";
-        private const int GetWeatherForecastsCacheDurationInMin = 30;
 
         public WeatherService(WeatherContext context, IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<TemperatureDto> validator)
         {

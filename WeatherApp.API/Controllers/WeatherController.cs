@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WeatherApp.API.Helpers;
-using WeatherApp.APIProviders;
 using WeatherApp.DataLayer.Entities;
 using WeatherApp.DomainLayer.Constants;
 using WeatherApp.DomainLayer.DTOs;
@@ -24,33 +23,36 @@ namespace WeatherApp.API.Controllers
         private readonly ICityService _cityService;
         private readonly IStatisticalInfoService _statisticalInfoService;
         private readonly SettingService _settingService;
-        private readonly IAPIWeatherProvider _apiWeatherProvider;
         private readonly WeatherHelper _weatherHelper;
         private readonly IMemoryCache _memoryCache;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, IAPIWeatherProvider apiWeatherProvider, WeatherHelper weatherHelper, IMemoryCache memoryCache)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, WeatherHelper weatherHelper, IMemoryCache memoryCache)
         {
             _weatherService = weatherService;
             _mapper = mapper;
             _cityService = cityService;
             _statisticalInfoService = statisticalInfoService;
             _settingService = settingService;
-            _apiWeatherProvider = apiWeatherProvider;
             _weatherHelper = weatherHelper;
             _memoryCache = memoryCache;
         }
 
         [HttpPost]
         [Route("addTemperature")]
-    public async Task<IActionResult> AddTemperature(string cityName, double degrees, string dateTime = null) 
-    {
+        public async Task<IActionResult> AddTemperature(string cityName, double degrees, string dateTime = null)
+        {
             try
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
-               
-                var temperature = new TemperatureDto { CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
-            
+
+                var temperature = new TemperatureDto
+                {
+                    CityId = cityId,
+                    Degrees = degrees,
+                    DateTime = _weatherHelper.GetDateTime(dateTime)
+                };
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
@@ -65,7 +67,7 @@ namespace WeatherApp.API.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }       
+        }
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteTemperature(int id)
@@ -75,7 +77,7 @@ namespace WeatherApp.API.Controllers
                 await _weatherService.DeleteWeatherCondition(id);
                 return Ok();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
@@ -100,99 +102,106 @@ namespace WeatherApp.API.Controllers
 
                 return Ok();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpPut("archive")]
+        public async Task Archive(int id) => await _weatherService.ArchiveWeatherCondition(id);
 
         [HttpGet("getHistory")]
         //WeatherInfoModel
         public IActionResult GetTemperatureHistory(string city)
         {
 
-            try
+
+            WeatherInfoModel resModel = new WeatherInfoModel();
+
+            if (!_memoryCache.TryGetValue($"WeatherList_{city}", out resModel))
             {
-                WeatherInfoModel resModel = new WeatherInfoModel() { 
-                CityName = city};
-                if (!_memoryCache.TryGetValue($"WeatherList_{city}", out resModel))
+                if (resModel == null)
                 {
-                    if (resModel == null)
+                    try
                     {
-                        resModel = new WeatherInfoModel() { };
+
                         List<Temperature> result = _weatherService.GetWeatherHistory(city);
-                        resModel.CityId = result[0].CityId;
-                        resModel.CityName = result[0].City.Name;
-                        //WeatherInfoModel resModel = new WeatherInfoModel
-                        //{
-                        //    CityId = result[0].CityId,
-                        //    CityName = result[0].City.Name
-                        //};
+                        resModel = new WeatherInfoModel()
+                        {
+                            CityId = result[0].CityId,
+                            CityName = result[0].City.Name
+                        };
+
                         var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
                         infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
                     }
-                    _memoryCache.Set($"WeatherList_{city}", resModel, new MemoryCacheEntryOptions
+                    catch (Exception e)
                     {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-                    });                }
-
-                //List<Temperature> result = _weatherService.GetWeatherHistory(city);
-                ////WeatherInfoModel resModel = new WeatherInfoModel
-                ////{
-                ////    CityId = result[0].CityId,
-                ////    CityName = result[0].City.Name
-                ////};
-                //var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
-                //infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
-                return Ok(resModel);
+                        return BadRequest(e.Message);
+                    }
+                }
+                _memoryCache.Set($"WeatherList_{city}", resModel, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                });
             }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            return Ok(resModel);
 
         }
 
-        [HttpPut("archive")]
-        public async Task Archive(int id) => await _weatherService.ArchiveWeatherCondition(id);
+
 
         [HttpGet("statisticalInfo")]
         public async Task<IActionResult> StatisticalInfo(string cityName)
         {
-            try
+            StatisticalInfoModel model = new StatisticalInfoModel();
+
+            if (!_memoryCache.TryGetValue($"StatisticalInfo_{cityName}", out model))
             {
-                if (_cityService.GetCityByCityName(cityName) == null)
+                if (model == null)
                 {
-                    throw new NotFoundException(Constants.ExceptionMessages.City.NotFoundException);
-
-
-                }
-                else
-                {
-                    int id = _cityService.GetCityByCityName(cityName).Id;
-                    var currentWeatherInfo = await _weatherService.GetCurrentWeather
-                        (WeatherApiUrls.ReturnUrl(cityName, _settingService.ApiKey), id);
-
-                    StatisticalInfoModel model = new StatisticalInfoModel
+                    try
                     {
-                        id = id,
-                        CityName = cityName,
-                        CurrentTemperature = currentWeatherInfo.MainInfo.Temp,
-                        AverageTemperature = _statisticalInfoService.GetAverage(id),
-                        MinTemperature = _statisticalInfoService.GetMin(id),
-                        MaxTemperature = _statisticalInfoService.GetMax(id)
-                    };
-                    return Ok(model);
+                        if (_cityService.GetCityByCityName(cityName) == null)
+                        {
+                            throw new NotFoundException(Constants.ExceptionMessages.City.NotFoundException);
+
+
+                        }
+                        else
+                        {
+
+                            int id = _cityService.GetCityByCityName(cityName).Id;
+
+                            var currentWeatherInfo = await _weatherService.GetCurrentWeather
+                                (WeatherApiUrls.ReturnUrl(cityName, _settingService.ApiKey), id);
+
+                            model = new StatisticalInfoModel
+                            {
+                                id = id,
+                                CityName = cityName,
+                                CurrentTemperature = currentWeatherInfo.MainInfo.Temp,
+                                AverageTemperature = _statisticalInfoService.GetAverage(id),
+                                MinTemperature = _statisticalInfoService.GetMin(id),
+                                MaxTemperature = _statisticalInfoService.GetMax(id)
+                            };
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
                 }
+                _memoryCache.Set($"StatisticalInfo_{cityName}", model, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60)
+                });
+
             }
 
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-
-
-
+            return Ok(model);
 
         }
     }
