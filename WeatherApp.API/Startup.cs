@@ -75,6 +75,7 @@ namespace WeatherApp.API
             services.ConfigureMapper();
             services.AddScoped<IValidator<CityDto>, CityValidator>();
             services.AddScoped<IValidator<TemperatureDto>, TemperatureValidator>();
+            services.AddMemoryCache();
 
         }
 

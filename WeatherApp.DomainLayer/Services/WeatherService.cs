@@ -20,6 +20,10 @@ namespace WeatherApp.DomainLayer.Services
         private readonly IAPIWeatherProvider _apiWeatherProvider;
         private readonly IValidator<TemperatureDto> _validator;
         private readonly IMapper _mapper;
+       
+
+        private const string GetWeatherForecastsCacheKey = "GetWeatherForecasts";
+        private const int GetWeatherForecastsCacheDurationInMin = 30;
 
         public WeatherService(WeatherContext context, IAPIWeatherProvider apiWeatherProvider, IMapper mapper, IValidator<TemperatureDto> validator)
         {
@@ -27,11 +31,12 @@ namespace WeatherApp.DomainLayer.Services
             _apiWeatherProvider = apiWeatherProvider;
             _mapper = mapper;
             _validator = validator;
+          
         }
 
         public async Task ArchiveWeatherCondition(int id)
         {
-            
+
             try
             {
                 var temp = _context.Temperature.Where(t => t.Id == id).ToList().First<Temperature>();
@@ -39,7 +44,7 @@ namespace WeatherApp.DomainLayer.Services
 
                 await _context.SaveChangesAsync();
             }
-            catch 
+            catch
             {
 
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
@@ -87,7 +92,7 @@ namespace WeatherApp.DomainLayer.Services
                 temp.CityId = temperature.CityId;
                 temp.Degrees = temperature.Degrees;
                 temp.DateTime = temperature.DateTime;
-                
+
                 await _context.SaveChangesAsync();
             }
             else
@@ -107,7 +112,7 @@ namespace WeatherApp.DomainLayer.Services
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
         }
 
-        public async Task <WeatherResult> GetCurrentWeather(string url, int id)
+        public async Task<WeatherResult> GetCurrentWeather(string url, int id)
         {
             var result = await _apiWeatherProvider.GetCurrentWeather(url);
             await CreateWeatherCondition(new TemperatureDto { CityId = id, DateTime = DateTime.Now, Degrees = result.MainInfo.Temp });
@@ -119,16 +124,16 @@ namespace WeatherApp.DomainLayer.Services
         public List<Temperature> GetWeatherHistory(string CityName)
         {
             var city = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault();
-            
+
             if (city != null)
             {
                 var id = city.Id;
                 var temp = _context.Temperature.FirstOrDefault(t => t.CityId == id);
                 if (temp != null)
                 {
-                    var model = _context.Temperature.Where(t => t.CityId == id).ToList();
+                    var weatherForecasts = _context.Temperature.Where(t => t.CityId == id).ToList();
                     //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
-                    return model;
+                    return weatherForecasts;
                 }
                 else throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
 
@@ -136,6 +141,26 @@ namespace WeatherApp.DomainLayer.Services
             else
                 throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
         }
+
+    }
+        //   var city = _context.Cities.Where(c => c.Name == CityName).FirstOrDefault();
+
+        //    if (city != null)
+        //    {
+        //        var id = city.Id;
+        //        var temp = _context.Temperature.FirstOrDefault(t => t.CityId == id);
+        //        if (temp != null)
+        //        {
+        //            var weatherForecasts = _context.Temperature.Where(t => t.CityId == id).ToList();
+        //            //var model = _context.Cities.Where(c => c.Name == CityName).ToList();
+        //            return weatherForecasts;
+        //        }
+        //        else throw new NotFoundException(Constants.Constants.ExceptionMessages.Temperature.NotFoundException);
+
+        //    }
+        //    else
+        //        throw new NotFoundException(Constants.Constants.ExceptionMessages.City.NotFoundException);
+        //}
 
         //public async Task UpdateWeatherCondition(Temperature temperature)
         //{
@@ -150,10 +175,10 @@ namespace WeatherApp.DomainLayer.Services
         //        await _context.SaveChangesAsync();
 
         //    }
-            
+
 
         //}
 
 
     }
-}
+

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -25,8 +26,9 @@ namespace WeatherApp.API.Controllers
         private readonly SettingService _settingService;
         private readonly IAPIWeatherProvider _apiWeatherProvider;
         private readonly WeatherHelper _weatherHelper;
+        private readonly IMemoryCache _memoryCache;
 
-        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, IAPIWeatherProvider apiWeatherProvider, WeatherHelper weatherHelper)
+        public WeatherController(IWeatherService weatherService, IMapper mapper, ICityService cityService, IStatisticalInfoService statisticalInfoService, SettingService settingService, IAPIWeatherProvider apiWeatherProvider, WeatherHelper weatherHelper, IMemoryCache memoryCache)
         {
             _weatherService = weatherService;
             _mapper = mapper;
@@ -35,6 +37,7 @@ namespace WeatherApp.API.Controllers
             _settingService = settingService;
             _apiWeatherProvider = apiWeatherProvider;
             _weatherHelper = weatherHelper;
+            _memoryCache = memoryCache;
         }
 
         [HttpPost]
@@ -45,14 +48,6 @@ namespace WeatherApp.API.Controllers
             {
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
-
-                //DateTime date;
-
-                //if (dateTime == null)
-                //    date = DateTime.Now;
-                //else
-                //    date = DateTime.ParseExact(dateTime, "yyyy-MM-dd HH:mm:ss",
-                //                       System.Globalization.CultureInfo.InvariantCulture);
                
                 var temperature = new TemperatureDto { CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
             
@@ -60,8 +55,6 @@ namespace WeatherApp.API.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                //var dto = _mapper.Map<TemperatureDto>(temperature);
 
                 await _weatherService.CreateWeatherCondition(_mapper.Map<TemperatureDto>(temperature));
 
@@ -96,14 +89,6 @@ namespace WeatherApp.API.Controllers
                 await _cityService.CreateCity(new CityDto { Name = cityName });
                 var cityId = _cityService.GetCityByCityName(cityName).Id;
 
-                //DateTime date;
-
-                //if (dateTime == null)
-                //    date = DateTime.Now;
-                //else
-                //    date = DateTime.ParseExact(dateTime, "yyyy-MM-dd HH:mm:ss",
-                //                       System.Globalization.CultureInfo.InvariantCulture);
-
                 var temp = new TemperatureDto { Id = id, CityId = cityId, Degrees = degrees, DateTime = _weatherHelper.GetDateTime(dateTime) };
 
                 if (!ModelState.IsValid)
@@ -125,19 +110,43 @@ namespace WeatherApp.API.Controllers
         //WeatherInfoModel
         public IActionResult GetTemperatureHistory(string city)
         {
+
             try
             {
-                List<Temperature> result = _weatherService.GetWeatherHistory(city);
-                WeatherInfoModel resModel = new WeatherInfoModel
+                WeatherInfoModel resModel = new WeatherInfoModel() { 
+                CityName = city};
+                if (!_memoryCache.TryGetValue($"WeatherList_{city}", out resModel))
                 {
-                    CityId = result[0].CityId,
-                    CityName = result[0].City.Name
-                };
-                var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
-                infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
-                return Ok(infoModel);
+                    if (resModel == null)
+                    {
+                        resModel = new WeatherInfoModel() { };
+                        List<Temperature> result = _weatherService.GetWeatherHistory(city);
+                        resModel.CityId = result[0].CityId;
+                        resModel.CityName = result[0].City.Name;
+                        //WeatherInfoModel resModel = new WeatherInfoModel
+                        //{
+                        //    CityId = result[0].CityId,
+                        //    CityName = result[0].City.Name
+                        //};
+                        var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
+                        infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
+                    }
+                    _memoryCache.Set($"WeatherList_{city}", resModel, new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+                    });                }
+
+                //List<Temperature> result = _weatherService.GetWeatherHistory(city);
+                ////WeatherInfoModel resModel = new WeatherInfoModel
+                ////{
+                ////    CityId = result[0].CityId,
+                ////    CityName = result[0].City.Name
+                ////};
+                //var infoModel = _mapper.Map<WeatherInfoModel>(resModel);
+                //infoModel.WeatherInfo = _mapper.Map<List<WeatherModel>>(result);
+                return Ok(resModel);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
