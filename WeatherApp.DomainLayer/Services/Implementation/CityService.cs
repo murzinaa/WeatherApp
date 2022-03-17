@@ -29,7 +29,7 @@ namespace WeatherApp.DomainLayer.Services.Implementation
 
         public async Task CreateCity(CityDto city)
         {
-            if (GetCityByCityName(city.Name) == null)
+            if (await GetCityByCityName(city.Name) == null)
             {
                 var result = _validator.Validate(city);
                 if (!result.IsValid)
@@ -62,10 +62,10 @@ namespace WeatherApp.DomainLayer.Services.Implementation
         return await _cityRepository.GetCityByCityId(id);
         }
 
-        public City GetCityByCityName(string cityName)
+        public async Task<City> GetCityByCityName(string cityName)
         {
-            var model = _context.Cities.Where(c => c.Name == cityName).FirstOrDefault();
-            return model;
+            //var model = _context.Cities.Where(c => c.Name == cityName).FirstOrDefault();
+            return await _cityRepository.GetCityByCityName(cityName);
         }
 
     }

@@ -8,7 +8,7 @@ namespace WeatherApp.DomainLayer.Services.Interfaces
     {
         Task CreateCity(CityDto city);
         Task DeleteCity(int id);
-        City GetCityByCityName(string cityName);
+        Task<City> GetCityByCityName(string cityName);
         Task<City> GetCityByCityId(int id);
     }
 
